@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from profiles.serializers import ProfileSerializer
-from .models import Article
+from .models import Article, Comment
 
 class ArticleSerializer(serializers.ModelSerializer):
   author = ProfileSerializer(read_only=True)
@@ -12,8 +12,8 @@ class ArticleSerializer(serializers.ModelSerializer):
   # `created_at` to be called `createdAt` and `updated_at` to be `updatedAt`.
   # `serializers.SerializerMethodField` is a good way to avoid having the
   # requirements of the client leak into our API.
-  # createdAt = serializers.SerializerMethodField(method_name="get_created_at")
-  # updatedAt = serializers.SerializerMethodField(method_name='get_updated_at')
+  # createdAt = serializers.SerializerMethodField('get_created_at')
+  # updatedAt = serializers.SerializerMethodField('get_updated_at')
 
   class Meta:
     model = Article
@@ -33,10 +33,51 @@ class ArticleSerializer(serializers.ModelSerializer):
     # def get_created_at(self, instance):
     #   return instance.created_at.isoformat()
 
-    # def get_updated_at(self, instance):
+    # def updated_at(self, instance):
     #   return instance.updated_at.isoformat()
 
     def create(self, validated_data):
       author = self.context.get('author', None)
       return Article.objects.create(author=author, **validated_data)
 
+
+
+class CommentSerializer(serializers.ModelSerializer):
+  author = ProfileSerializer(required=False)
+  createdAt = serializers.SerializerMethodField(method_name='get_created_at')
+  updatedAt = serializers.SerializerMethodField(method_name='get_updated_at')
+  class Meta:
+    model = Comment
+    fields = (
+      'id',
+      'author',
+      'body',
+      'createdAt',
+      'updatedAt',
+    )
+  def create(self, validated_data):
+    article = self.context['article']
+    author = self.context['author']
+    
+    return Comment.objects.create(
+      author=author, article=article, **validated_data
+    )
+
+  def get_created_at(self, instance):
+    return instance.created_at.isoformat()
+
+  def get_updated_at(self, instance):
+    return instance.updated_at.isoformat()
+
+
+
+# @property
+# def popularity(self):
+#     likes = self.post.count
+#     time = #hours since created
+#     return likes / time if time > 0 else likes
+# then use a generic Field to reference it in your serializer:
+
+# class ListingSerializer(serializers.ModelSerializer):
+#     ...
+#     popularity = serializers.Field(source='popularity')
