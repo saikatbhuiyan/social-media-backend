@@ -13,8 +13,8 @@ class Article(TimestampedModel):
   # key (or one-to-many) relationship. In this case, one `Profile` can have
   # many `Article`s.
   author = models.ForeignKey(
-  'profiles.Profile', on_delete=models.CASCADE, related_name='articles'
+    'profiles.Profile', on_delete=models.CASCADE, related_name='articles'
   )
-  
+
   def __str__(self):
     return self.title
