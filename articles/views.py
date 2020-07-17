@@ -17,8 +17,21 @@ class ArticleViewSet(mixins.CreateModelMixin,
   lookup_field = 'slug'
   queryset = Article.objects.select_related('author', 'author__user')
   permission_classes = (IsAuthenticatedOrReadOnly,)
-  renderer_classes = (ArticleJSONRenderer,)
+  # renderer_classes = (ArticleJSONRenderer,)
   serializer_class = ArticleSerializer
+
+  def list(self, request):
+    articles = Article.objects.all()
+
+    serializer = self.serializer_class(
+      articles, many=True
+    )
+    data = {
+      'count': len(serializer.data),
+      'articles': serializer.data
+    }
+    return Response(data, status=status.HTTP_200_OK)
+
 
   def create(self, request):
     serializer_context = {'author': request.user.profile}
