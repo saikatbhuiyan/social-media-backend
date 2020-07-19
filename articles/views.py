@@ -13,6 +13,7 @@ from .serializers import ArticleSerializer, CommentSerializer
 class ArticleViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
+                     mixins.DestroyModelMixin,
                      viewsets.GenericViewSet):
 
   lookup_field = 'slug'
@@ -69,7 +70,7 @@ class ArticleViewSet(mixins.CreateModelMixin,
     return Response(serializer.data, status=status.HTTP_200_OK)
 
   
-  def update(self, request, slug):
+  def update(self, request, pk):
     serializer_context = {'request': request}
 
     try:
@@ -91,7 +92,22 @@ class ArticleViewSet(mixins.CreateModelMixin,
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+  # def destroy(self, request, slug):
+  #   serializer_context = {'request': request}
+  #   try:
+  #     serializer_instance = self.queryset.get(pk=pk)
+  #     serializer_instance.delete()
 
+  #   except Article.DoesNotExist:
+  #     raise NotFound('An article with this slug does not exist.')
+
+  #   # # serializer = self.serializer_class(serializer_instance)
+  #   # serializer = self.serializer_class(
+  #   # serializer_instance,
+  #   #   context=serializer_context
+  #   # )
+
+  #   return Response("Success", status=status.HTTP_200_OK)
 
 class CommentsListCreateAPIView(generics.ListCreateAPIView):
     lookup_field = 'article__slug'
