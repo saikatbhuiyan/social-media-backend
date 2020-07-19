@@ -1,20 +1,23 @@
 from rest_framework import serializers
 
 from profiles.serializers import ProfileSerializer
-from .models import Article, Comment
+from .models import Article, Comment, Tag
+from .relations import TagRelatedField
 
 class ArticleSerializer(serializers.ModelSerializer):
   author = ProfileSerializer(read_only=True)
   description = serializers.CharField(required=False)
   slug = serializers.SlugField(required=False)
+  tagList = TagRelatedField(many=True, required=False, source='tags')
   # Django REST Framework makes it possible to create a read-only field that
   # gets its value by calling a function. In this case, the client expects
   # `created_at` to be called `createdAt` and `updated_at` to be `updatedAt`.
   # `serializers.SerializerMethodField` is a good way to avoid having the
   # requirements of the client leak into our API.
-  
+
   createdAt = serializers.SerializerMethodField('get_created_at')
   updatedAt = serializers.SerializerMethodField('get_updated_at')
+
   favorited = serializers.SerializerMethodField()
   favoritesCount = serializers.SerializerMethodField(
     method_name='get_favorites_count'
@@ -61,9 +64,16 @@ class ArticleSerializer(serializers.ModelSerializer):
     
 
     def create(self, validated_data):
+      
       author = self.context.get('author', None)
-      return Article.objects.create(author=author, **validated_data)
-
+      tags = validated_data.pop('tags', [])
+      
+      article = Article.objects.create(author=author, **validated_data)
+      
+      for tag in tags:
+        article.tags.add(tag)
+      # return Article.objects.create(author=author, **validated_data)
+      return article
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -93,6 +103,15 @@ class CommentSerializer(serializers.ModelSerializer):
   def get_updated_at(self, instance):
     return instance.updated_at.isoformat()
 
+
+class TagSerializer(serializers.ModelSerializer):
+
+  class Meta:
+    model = Tag
+    fields = ('tag',)
+    
+  def to_representation(self, obj):
+    return obj.tag
 
 
 # @property
