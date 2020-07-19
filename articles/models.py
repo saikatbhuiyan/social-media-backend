@@ -5,6 +5,13 @@ from django.utils.text import slugify
 from core.models import TimestampedModel
 from core.utils import generate_random_string
 
+class Tag(TimestampedModel):
+  tag = models.CharField(max_length=255)
+  slug = models.SlugField(db_index=True, unique=True)
+
+  def __str__(self):
+    return self.tag
+
 class Article(TimestampedModel):
   slug = models.SlugField(db_index=True, max_length=255)
   title = models.CharField(db_index=True, max_length=255)
@@ -18,7 +25,10 @@ class Article(TimestampedModel):
   author = models.ForeignKey(
     'profiles.Profile', on_delete=models.CASCADE, default=1, related_name='articles'
   )
-
+  tags = models.ManyToManyField(
+    'articles.Tag', related_name='articles'
+  )
+  
   def save(self, *args, **kwargs):
     uniqe = generate_random_string()
     self.slug = slugify(self.title) + uniqe
