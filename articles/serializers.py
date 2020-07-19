@@ -14,6 +14,10 @@ class ArticleSerializer(serializers.ModelSerializer):
   # requirements of the client leak into our API.
   # createdAt = serializers.SerializerMethodField('get_created_at')
   # updatedAt = serializers.SerializerMethodField('get_updated_at')
+  favorited = serializers.SerializerMethodField()
+  favoritesCount = serializers.SerializerMethodField(
+    method_name='get_favorites_count'
+  )
 
   class Meta:
     model = Article
@@ -22,6 +26,8 @@ class ArticleSerializer(serializers.ModelSerializer):
       'body',
       # 'createdAt',
       'description',
+      'favorited',
+      'favoritesCount',
       'slug',
       'title',
       # 'updatedAt',
@@ -39,6 +45,20 @@ class ArticleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
       author = self.context.get('author', None)
       return Article.objects.create(author=author, **validated_data)
+
+    def get_favorited(self, instance):
+      request = self.context.get('request', None)
+
+      if request is None:
+        return False
+
+      if not request.user.is_authenticated:
+        return False
+
+      return request.user.profile.has_favorited(instance)
+
+    def get_favorites_count(self, instance):
+      return instance.favorited_by.count()
 
 
 
@@ -58,7 +78,7 @@ class CommentSerializer(serializers.ModelSerializer):
   def create(self, validated_data):
     article = self.context['article']
     author = self.context['author']
-    
+
     return Comment.objects.create(
       author=author, article=article, **validated_data
     )
