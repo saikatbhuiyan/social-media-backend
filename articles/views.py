@@ -21,11 +21,15 @@ class ArticleViewSet(mixins.CreateModelMixin,
   serializer_class = ArticleSerializer
 
   def list(self, request):
-    articles = Article.objects.all()
+    serializer_context = {'request': request}
+    serializer_instances = self.queryset.all()
 
     serializer = self.serializer_class(
-      articles, many=True
+      serializer_instances,
+      context=serializer_context,
+      many=True
     )
+
     data = {
       'count': len(serializer.data),
       'articles': serializer.data
@@ -48,18 +52,18 @@ class ArticleViewSet(mixins.CreateModelMixin,
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-  def list(self, request):
+  # def list(self, request):
 
-    serializer_context = {'request': request}
-    serializer_instances = self.queryset.all()
+  #   serializer_context = {'request': request}
+  #   serializer_instances = self.queryset.all()
 
-    serializer = self.serializer_class(
-      serializer_instances,
-      context=serializer_context,
-      many=True
-    )
+  #   serializer = self.serializer_class(
+  #     serializer_instances,
+  #     context=serializer_context,
+  #     many=True
+  #   )
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+  #   return Response(serializer.data, status=status.HTTP_200_OK)
 
   def retrieve(self, request, slug):
     serializer_context = {'request': request}
@@ -79,7 +83,7 @@ class ArticleViewSet(mixins.CreateModelMixin,
   
   def update(self, request, slug):
     serializer_context = {'request': request}
-    
+
     try:
       serializer_instance = self.queryset.get(slug=slug)
     except Article.DoesNotExist:
