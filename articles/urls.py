@@ -5,7 +5,8 @@ from .views import (
   ArticleViewSet, 
   ArticlesFavoriteAPIView,
   CommentsListCreateAPIView, 
-  CommentsDestroyAPIView
+  CommentsDestroyAPIView,
+  TagListAPIView
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -18,4 +19,5 @@ urlpatterns = [
   path('articles/<slug:article_slug>/favorite', ArticlesFavoriteAPIView.as_view()),
   path('articles/<slug:article_slug>/comments', CommentsListCreateAPIView.as_view()),
   path('articles/<slug:article_slug>/comments/<int:comment_pk>', CommentsDestroyAPIView.as_view()),
+  path('tags', TagListAPIView.as_view()),
 ]

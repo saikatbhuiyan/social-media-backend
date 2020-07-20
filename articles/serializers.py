@@ -61,8 +61,6 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     )
     
-    
-
     def create(self, validated_data):
       
       author = self.context.get('author', None)
