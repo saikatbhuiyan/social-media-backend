@@ -56,8 +56,7 @@ class ArticleSerializer(serializers.ModelSerializer):
       'title',
       'createdAt',
       'updatedAt',
-      # 'created_at',
-      # 'updated_at',
+      'tagList',
 
     )
     
